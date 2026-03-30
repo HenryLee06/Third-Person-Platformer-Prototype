@@ -22,92 +22,214 @@ public class PlayerBrain : MonoBehaviour
     [SerializeField] private Vector3 currentHorizontalVelocity;
     [SerializeField] private float verticalVelocity;
 
+    [SerializeField] private Vector2 lookInput;
+    [SerializeField] private ThirdPersonCamera followCamera;
+
     private void Awake()
     {
-        // Cache references if needed.
-        // Example: rb = GetComponent<Rigidbody>();
-        // Keep setup defensive but simple.
+        if (rb == null) rb = GetComponent<Rigidbody>();
+        if (senses == null) senses = GetComponent<PlayerSenses>();
+
+        if (rb != null)
+        {
+            rb.freezeRotation = true;
+        }
     }
 
     private void Update()
     {
-        // Read input every frame.
-        // Run environment checks.
-        // Decide which traversal state we should be in.
+        if (profile == null || senses == null) return;
+
+        senses.RunChecks(profile);
+
+        UpdateState();
+
+        if (jumpPressed)
+        {
+            TryJump();
+        }
     }
 
     private void FixedUpdate()
     {
-        // Apply movement in physics step.
-        // Handle grounded / walking / airborne movement here.
+        if (profile == null || rb == null) return;
+
+        HandleMovement();
+        ApplyFinalVelocity();
     }
 
-    public void OnMove(InputAction.CallbackContext context)
+    public void OnMove(InputValue value)
     {
-        // Read Vector2 move input from New Input System.
+        moveInput = value.Get<Vector2>();
     }
 
-    public void OnJump(InputAction.CallbackContext context)
+    public void OnJump(InputValue value)
     {
-        // Detect jump press.
-        // Usually set jumpPressed = true when performed.
+        if (value.isPressed)
+        {
+            jumpPressed = true;
+        }
+    }
+
+    public void OnLook(InputValue value)
+    {
+        lookInput = value.Get<Vector2>();
+    }
+
+    private void LateUpdate()
+    {
+        if (followCamera != null)
+        {
+            followCamera.SetLookInput(lookInput);
+        }
     }
 
     private void UpdateState()
     {
-        // Decide state transitions.
-        // For Session 1:
-        // grounded + no move = Idle
-        // grounded + move = Walk
-        // not grounded = Jump
+        if (!senses.IsGrounded || verticalVelocity > 0.01f)
+        {
+            currentState = PlayerTraversalState.Jump;
+            return;
+        }
+
+        if (moveInput.sqrMagnitude > 0.01f)
+        {
+            currentState = PlayerTraversalState.Walk;
+        }
+        else
+        {
+            currentState = PlayerTraversalState.Idle;
+        }
     }
 
     private void HandleMovement()
     {
-        // Main movement dispatcher.
-        // Call the correct movement method based on currentState.
+        switch (currentState)
+        {
+            case PlayerTraversalState.Idle:
+                HandleIdle();
+                break;
+
+            case PlayerTraversalState.Walk:
+                HandleWalk();
+                break;
+
+            case PlayerTraversalState.Jump:
+                HandleJump();
+                break;
+        }
     }
 
     private void HandleIdle()
     {
-        // Slow the player to a stop on the ground.
-        // No intended horizontal motion.
+        currentHorizontalVelocity = Vector3.MoveTowards(
+            currentHorizontalVelocity,
+            Vector3.zero,
+            profile.groundDeceleration * Time.fixedDeltaTime
+        );
+
+        if (senses.IsGrounded)
+        {
+            verticalVelocity = -2f;
+        }
     }
 
     private void HandleWalk()
     {
-        // Convert move input into camera-relative movement.
-        // Accelerate toward walk speed.
+        Vector3 moveDirection = GetCameraRelativeMoveDirection();
+        Vector3 targetVelocity = moveDirection * profile.walkSpeed;
+
+        currentHorizontalVelocity = Vector3.MoveTowards(
+            currentHorizontalVelocity,
+            targetVelocity,
+            profile.groundAcceleration * Time.fixedDeltaTime
+        );
+
+        if (moveDirection.sqrMagnitude > 0.001f)
+        {
+            transform.forward = moveDirection;
+        }
+
+        if (senses.IsGrounded)
+        {
+            verticalVelocity = -2f;
+        }
     }
 
     private void HandleJump()
     {
-        // Apply air movement and gravity while airborne.
+        Vector3 moveDirection = GetCameraRelativeMoveDirection();
+        Vector3 targetVelocity = moveDirection * profile.maxAirSpeed;
+
+        currentHorizontalVelocity = Vector3.MoveTowards(
+            currentHorizontalVelocity,
+            targetVelocity,
+            profile.airAcceleration * Time.fixedDeltaTime
+        );
+
+        if (moveDirection.sqrMagnitude > 0.001f)
+        {
+            transform.forward = moveDirection;
+        }
+
+        ApplyGravity();
     }
 
     private void TryJump()
     {
-        // Only allow if grounded in Session 1.
-        // Set vertical velocity / apply jump force.
-        // Move into Jump state immediately.
+        if (!jumpPressed) return;
+
+        if (senses.IsGrounded)
+        {
+            verticalVelocity = profile.jumpForce;
+            currentState = PlayerTraversalState.Jump;
+        }
+
+        jumpPressed = false;
     }
 
     private Vector3 GetCameraRelativeMoveDirection()
     {
-        // Convert 2D input into a world direction based on camera forward/right.
-        // Ignore camera Y so movement stays planar.
-        return Vector3.zero;
+        if (cameraTransform == null)
+        {
+            return new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+        }
+
+        Vector3 cameraForward = cameraTransform.forward;
+        Vector3 cameraRight = cameraTransform.right;
+
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
+
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        Vector3 moveDirection = (cameraForward * moveInput.y) + (cameraRight * moveInput.x);
+
+        if (moveDirection.sqrMagnitude > 1f)
+        {
+            moveDirection.Normalize();
+        }
+
+        return moveDirection;
     }
 
     private void ApplyGravity()
     {
-        // Reduce vertical velocity over time.
-        // Clamp to max fall speed.
+        verticalVelocity += profile.gravity * Time.fixedDeltaTime;
+        verticalVelocity = Mathf.Max(verticalVelocity, profile.maxFallSpeed);
     }
 
     private void ApplyFinalVelocity()
     {
-        // Combine horizontal movement and vertical movement.
-        // Push result into rigidbody.
+        if (senses.IsGrounded && verticalVelocity < 0f && currentState != PlayerTraversalState.Jump)
+        {
+            verticalVelocity = -2f;
+        }
+
+        Vector3 finalVelocity = currentHorizontalVelocity;
+        finalVelocity.y = verticalVelocity;
+
+        rb.velocity = finalVelocity;
     }
 }

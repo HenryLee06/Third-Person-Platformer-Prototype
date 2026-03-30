@@ -22,6 +22,6 @@ public class PlayerProfileSO : ScriptableObject // This is just the movement var
     public float maxFallSpeed = -20f;
 
     [Header("Checks")]
-    public float groundCheckDistance = 0.2f;
+    public float groundCheckDistance = 0.5f;
     public float wallCheckDistance = 0.4f;
 }
