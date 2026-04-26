@@ -105,4 +105,29 @@ public class PlayerBrain : MonoBehaviour
         }
     }
 
+    private Vector3 GetCameraRelativeMoveDirection()
+    {
+        if (cameraTransform == null)
+        {
+            return new Vector3(moveInput.x, 0f, moveInput.y).normalized;
+        }
+
+        Vector3 cameraForward = cameraTransform.forward;
+        Vector3 cameraRight = cameraTransform.right;
+
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
+
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        Vector3 moveDirection = (cameraForward * moveInput.y) + (cameraRight * moveInput.x);
+
+        if (moveDirection.sqrMagnitude > 1f)
+        {
+            moveDirection.Normalize();
+        }
+
+        return moveDirection;
+    }
 }
