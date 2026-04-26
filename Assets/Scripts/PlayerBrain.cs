@@ -61,4 +61,14 @@ public class PlayerBrain : MonoBehaviour
         HandleMovement();
     }
 
+    public void OnMove(InputValue value)
+    {
+        moveInput = value.Get<Vector2>();
+    }
+
+    public void OnLook(InputValue value)
+    {
+        lookInput = value.Get<Vector2>();
+    }
+
 }
