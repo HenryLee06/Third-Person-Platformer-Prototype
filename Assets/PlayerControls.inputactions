@@ -2,28 +2,28 @@
     "name": "PlayerControls",
     "maps": [
         {
-            "name": "New action map",
+            "name": "Player",
             "id": "5e370ed5-0e1d-4104-b9d7-6cd763f47e66",
             "actions": [
                 {
-                    "name": "New action",
-                    "type": "Button",
-                    "id": "232978c6-c572-4d55-8524-311a22e8d54d",
-                    "expectedControlType": "Button",
+                    "name": "Move",
+                    "type": "Value",
+                    "id": "ad7a0367-c0a9-441a-9c0c-e39e6c7fe37c",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
                 {
                     "name": "",
-                    "id": "626e7b1b-da06-473e-808b-0f047f9d1c33",
+                    "id": "99f9d6ec-7778-42ce-8fb9-0ade296e5d3f",
                     "path": "",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "New action",
+                    "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
