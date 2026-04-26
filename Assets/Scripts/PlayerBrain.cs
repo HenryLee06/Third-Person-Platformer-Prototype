@@ -83,4 +83,26 @@ public class PlayerBrain : MonoBehaviour
         }
     }
 
+    private void HandleMovement()
+    {
+        if (rb == null) return;
+
+        Vector3 moveDirection = GetCameraRelativeMoveDirection();
+
+        Vector3 targetVelocity = moveDirection * moveSpeed;
+
+        targetVelocity.y = rb.velocity.y;
+
+        rb.velocity = targetVelocity;
+
+        if (currentState == PlayerTraversalState.Walk && moveDirection.sqrMagnitude > 0.001f)
+        {
+            transform.forward = Vector3.Lerp(
+                transform.forward,
+                moveDirection,
+                rotationSpeed * Time.fixedDeltaTime
+            );
+        }
+    }
+
 }
