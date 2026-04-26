@@ -28,4 +28,26 @@ public class PlayerBrain : MonoBehaviour
     [SerializeField] private float yaw;
     [SerializeField] private float pitch;
 
+    private void Awake()
+    {
+        if (rb == null)
+        {
+            rb = GetComponent<Rigidbody>();
+        }
+
+        if (rb != null)
+        {
+            rb.freezeRotation = true;
+        }
+
+        if (cameraPivot != null)
+        {
+            yaw = cameraPivot.eulerAngles.y;
+        }
+        else
+        {
+            yaw = transform.eulerAngles.y;
+        }
+    }
+
 }
