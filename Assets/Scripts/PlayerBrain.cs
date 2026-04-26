@@ -71,4 +71,16 @@ public class PlayerBrain : MonoBehaviour
         lookInput = value.Get<Vector2>();
     }
 
+    private void UpdateState()
+    {
+        if (moveInput.sqrMagnitude > 0.01f)
+        {
+            currentState = PlayerTraversalState.Walk;
+        }
+        else
+        {
+            currentState = PlayerTraversalState.Idle;
+        }
+    }
+
 }
