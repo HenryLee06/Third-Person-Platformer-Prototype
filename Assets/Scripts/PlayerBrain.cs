@@ -130,4 +130,21 @@ public class PlayerBrain : MonoBehaviour
 
         return moveDirection;
     }
+
+    private void HandleCameraRotation()
+    {
+        if (cameraPivot == null) return;
+
+        yaw += lookInput.x * lookSensitivity;
+        pitch -= lookInput.y * lookSensitivity;
+
+        pitch = Mathf.Clamp(pitch, cameraPitchMin, cameraPitchMax);
+
+        cameraPivot.rotation = Quaternion.Euler(pitch, yaw, 0f);
+
+        if (cameraTransform != null)
+        {
+            cameraTransform.localRotation = Quaternion.identity;
+        }
+    }
 }
