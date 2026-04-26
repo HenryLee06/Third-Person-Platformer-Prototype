@@ -50,4 +50,15 @@ public class PlayerBrain : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        UpdateState();
+        HandleCameraRotation();
+    }
+
+    private void FixedUpdate()
+    {
+        HandleMovement();
+    }
+
 }
