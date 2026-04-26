@@ -1,0 +1,31 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class PlayerBrain : MonoBehaviour
+{
+    [Header("References")]
+    [SerializeField] private Rigidbody rb;
+    [SerializeField] private Transform cameraPivot;
+    [SerializeField] private Transform cameraTransform;
+
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float rotationSpeed = 10f;
+
+    [Header("Camera Settings")]
+    [SerializeField] private float lookSensitivity = 0.1f;
+    [SerializeField] private float cameraPitchMin = -30f;
+    [SerializeField] private float cameraPitchMax = 60f;
+
+    [Header("State")]
+    [SerializeField] private PlayerTraversalState currentState = PlayerTraversalState.Idle;
+
+    [Header("Input Readout")]
+    [SerializeField] private Vector2 moveInput;
+    [SerializeField] private Vector2 lookInput;
+
+    [Header("Camera Readout")]
+    [SerializeField] private float yaw;
+    [SerializeField] private float pitch;
+
+}
